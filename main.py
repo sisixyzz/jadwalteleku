@@ -148,7 +148,7 @@ def setup_bot():
 def main():
     generate_weekly_schedule()
     schedule.every().monday.at("00:00").do(generate_weekly_schedule)
-    schedule.every().day.at("08:00").do(send_daily_schedule)
+    schedule.every().day.at("04:00").do(send_daily_schedule)
 
     updater = setup_bot()
 
