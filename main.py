@@ -106,6 +106,13 @@ def add_project_csv(update: Update, context: CallbackContext):
     update.message.reply_text("✅ CSV berhasil diupdate!")
 
 
+def hapuss(update: Update, context: CallbackContext):
+    with open(WEEKLY_SCHEDULE_FILE, 'w') as f:
+        json.dump({}, f)
+    update.message.reply_text("🗑️ Jadwal mingguan berhasil dihapus!")
+
+
+
 def download_projects(update: Update, context: CallbackContext):
     if os.path.exists(PROJECT_FILE):
         update.message.reply_document(open(PROJECT_FILE, 'rb'))
@@ -140,6 +147,8 @@ def setup_bot():
     dp.add_handler(CommandHandler("download_history", download_history))
     dp.add_handler(CommandHandler("download_weekly_history", download_weekly_history))
     dp.add_handler(MessageHandler(Filters.document.mime_type("text/csv"), add_project_csv))
+    dp.add_handler(CommandHandler("hapuss", hapuss))
+
 
     updater.start_polling()
     return updater
