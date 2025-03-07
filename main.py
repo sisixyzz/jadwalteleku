@@ -71,6 +71,18 @@ def save_weekly_history(week_number, start_date, end_date, total_projects):
     pd.DataFrame(history, columns=["Minggu Ke-", "Tanggal Awal", "Tanggal Akhir", "Jumlah Project Total"]).to_csv(WEEKLY_HISTORY_FILE, index=False)
 
 
+def delete_projects_from_csv(delete_file):
+    try:
+        projects_df = pd.read_csv(PROJECT_FILE)
+        delete_df = pd.read_csv(delete_file)
+
+        # Hapus baris di projects.csv yang PERSIS sama dengan dell.csv
+        projects_df = projects_df[~projects_df.apply(tuple, 1).isin(delete_df.apply(tuple, 1))]
+        save_projects(projects_df)
+    except Exception as e:
+        print(f"❌ Error saat menghapus data: {e}")
+
+
 def send_daily_schedule():
     today = datetime.datetime.now()
     weekday = today.weekday()
@@ -102,20 +114,24 @@ def send_daily_schedule():
 
 def add_project_csv(update: Update, context: CallbackContext):
     file = update.message.document.get_file()
-    file.download("temp_projects.csv")  # simpan sementara
+    file_name = update.message.document.file_name
+    file.download("temp_projects.csv")  # Simpan sementara
 
-    # Load data lama & baru
-    old_projects = load_projects()
-    new_projects = pd.read_csv("temp_projects.csv")
+    if file_name.lower() == "dell.csv":
+        delete_projects_from_csv("temp_projects.csv")
+        update.message.reply_text("🗑️ Data dari dell.csv berhasil dihapus dari database.")
+    else:
+        # Load data lama & baru
+        old_projects = load_projects()
+        new_projects = pd.read_csv("temp_projects.csv")
 
-    # Gabung data
-    combined = pd.concat([old_projects, new_projects]).drop_duplicates().reset_index(drop=True)
+        # Gabung data dan hapus duplikat
+        combined = pd.concat([old_projects, new_projects]).drop_duplicates().reset_index(drop=True)
+        save_projects(combined)
+        update.message.reply_text("✅ CSV berhasil ditambahkan dan duplikat dihapus!")
 
-    # Simpan ke projects.csv
-    save_projects(combined)
+    os.remove("temp_projects.csv")  # Hapus file sementara
 
-    os.remove("temp_projects.csv")  # hapus file sementara
-    update.message.reply_text("✅ CSV berhasil ditambahkan dan duplikat dihapus!")
 
 
 
