@@ -102,8 +102,21 @@ def send_daily_schedule():
 
 def add_project_csv(update: Update, context: CallbackContext):
     file = update.message.document.get_file()
-    file.download(PROJECT_FILE)
-    update.message.reply_text("✅ CSV berhasil diupdate!")
+    file.download("temp_projects.csv")  # simpan sementara
+
+    # Load data lama & baru
+    old_projects = load_projects()
+    new_projects = pd.read_csv("temp_projects.csv")
+
+    # Gabung data
+    combined = pd.concat([old_projects, new_projects]).drop_duplicates().reset_index(drop=True)
+
+    # Simpan ke projects.csv
+    save_projects(combined)
+
+    os.remove("temp_projects.csv")  # hapus file sementara
+    update.message.reply_text("✅ CSV berhasil ditambahkan dan duplikat dihapus!")
+
 
 
 def hapuss(update: Update, context: CallbackContext):
