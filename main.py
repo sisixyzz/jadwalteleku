@@ -104,12 +104,14 @@ def send_daily_schedule():
     message = f"📅 Jadwal {day_name} ({date_str}):\n"
     history = []
     for p in daily_projects:
-        message += f"- {p['Nama Project']} [{p['Type']}] → {p['Link']}\n"
-        history.append([date_str, day_name, p['Nama Project'], p['Type']])
+        name = p['Nama Project']
+        link = p['Link']
+        message += f'- <a href="{link}">{name}</a>\n'
+        history.append([date_str, day_name, name, p['Type']])
 
     pd.DataFrame(history, columns=["Tanggal", "Hari", "Project", "Type"]).to_csv(HISTORY_FILE, mode='a', header=not os.path.exists(HISTORY_FILE), index=False)
 
-    bot.send_message(chat_id=CHAT_ID, text=message)
+    bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='HTML')
 
 
 def add_project_csv(update: Update, context: CallbackContext):
