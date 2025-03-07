@@ -71,6 +71,11 @@ def save_weekly_history(week_number, start_date, end_date, total_projects):
     pd.DataFrame(history, columns=["Minggu Ke-", "Tanggal Awal", "Tanggal Akhir", "Jumlah Project Total"]).to_csv(WEEKLY_HISTORY_FILE, index=False)
 
 
+def init_weekly_history():
+    if not os.path.exists(WEEKLY_HISTORY_FILE) or os.path.getsize(WEEKLY_HISTORY_FILE) == 0:
+        pd.DataFrame(columns=["Minggu Ke-", "Tanggal Awal", "Tanggal Akhir", "Jumlah Project Total"]).to_csv(WEEKLY_HISTORY_FILE, index=False)
+
+
 def delete_projects_from_csv(delete_file):
     try:
         projects_df = pd.read_csv(PROJECT_FILE)
@@ -186,6 +191,7 @@ def setup_bot():
 
 
 def main():
+    init_weekly_history()
     generate_weekly_schedule()
     schedule.every().monday.at("00:00").do(generate_weekly_schedule)
     schedule.every().day.at("04:00").do(send_daily_schedule)
